@@ -77,7 +77,7 @@ def main(exp_name: str):
 
     set_seed(cfg.seed)
     action_context = generate_action_context(cfg.n_actions, cfg.dim_action_context)
-    env = BanditEnv(cfg.n_actions, cfg.dim_context, action_context)
+    env = BanditEnv(cfg.n_actions, cfg.dim_context, action_context, cfg.seed)
     policies = [
         RandomPolicy(cfg.n_actions),
         EpsilonGreedyPolicy(cfg.n_actions, 0.03),
