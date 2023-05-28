@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "bandit"
+version = "0.1.0"
+description = ""
+authors = ["tubo213"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+numpy = "^1.24.3"
+pandas = "^2.0.1"
+matplotlib = "^3.7.1"
+seaborn = "^0.12.2"
+tqdm = "^4.65.0"
+torch = "^2.0.1"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
