@@ -9,6 +9,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 @dataclass
 class Config:
     seed: int
+    n_trials: int
     bs: int
     step: int
     n_actions: int
