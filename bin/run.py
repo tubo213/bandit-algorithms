@@ -1,12 +1,12 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Tuple
 
 import click
 import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
 
-from src.config import load_config
+from src.config import Config, load_config
 from src.policy import AbstractPolicy, EpsilonGreedyPolicy, LinUCBPolicy, RandomPolicy, SoftMaxPolicy, UCBPolicy
 from src.simulation_env import BanditEnv, generate_action_context
 from src.utils import set_seed
@@ -17,6 +17,21 @@ class ExpResult:
     policy_names: List[str]
     correct_action_rate: np.ndarray
     cum_regret: np.ndarray
+
+
+def set_up(cfg: Config) -> Tuple[BanditEnv, List[AbstractPolicy]]:
+    set_seed(cfg.seed)
+    action_context = generate_action_context(cfg.n_actions, cfg.dim_action_context)
+    env = BanditEnv(cfg.n_actions, cfg.dim_context, action_context, cfg.seed)
+    policies = [
+        RandomPolicy(cfg.n_actions),
+        EpsilonGreedyPolicy(cfg.n_actions, 0.03),
+        SoftMaxPolicy(cfg.n_actions),
+        UCBPolicy(cfg.n_actions, alpha=0.1),
+        LinUCBPolicy(cfg.n_actions, cfg.dim_context, alpha=1, action_context=action_context),
+    ]
+
+    return env, policies
 
 
 def run_simulation(env: BanditEnv, policies: List[AbstractPolicy], bs: int, step: int) -> ExpResult:
@@ -71,22 +86,16 @@ def plot_results(result: ExpResult, save_path: str):
 @click.command()
 @click.option("--exp-name", type=str, default="debug", help="Experiment name")
 def main(exp_name: str):
+    # load config
     yaml_path = f"./yaml/{exp_name}.yaml"
     default_yaml_path = "./yaml/default.yaml"
     cfg = load_config(yaml_path, default_yaml_path)
 
-    set_seed(cfg.seed)
-    action_context = generate_action_context(cfg.n_actions, cfg.dim_action_context)
-    env = BanditEnv(cfg.n_actions, cfg.dim_context, action_context, cfg.seed)
-    policies = [
-        RandomPolicy(cfg.n_actions),
-        EpsilonGreedyPolicy(cfg.n_actions, 0.03),
-        SoftMaxPolicy(cfg.n_actions),
-        UCBPolicy(cfg.n_actions, alpha=0.1),
-        LinUCBPolicy(cfg.n_actions, cfg.dim_context, alpha=1, action_context=action_context),
-    ]
-
+    # experiment
+    env, policies = set_up(cfg)
     results = run_simulation(env, policies, cfg.bs, cfg.step)
+
+    # plot
     save_path = f"./results/{exp_name}.png"
     plot_results(results, save_path)
 
