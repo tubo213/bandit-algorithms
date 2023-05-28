@@ -1,3 +1,4 @@
+seed: 3090
 bs: 1
 step: 5000
 n_actions: 100

@@ -9,6 +9,7 @@ from tqdm import tqdm
 from src.config import load_config
 from src.policy import AbstractPolicy, EpsilonGreedyPolicy, LinUCBPolicy, RandomPolicy, SoftMaxPolicy, UCBPolicy
 from src.simulation_env import BanditEnv, generate_action_context
+from src.utils import set_seed
 
 
 @dataclass(frozen=True)
@@ -73,6 +74,7 @@ def main(exp_name: str):
     default_yaml_path = "./yaml/default.yaml"
     cfg = load_config(yaml_path, default_yaml_path)
 
+    set_seed(cfg.seed)
     action_context = generate_action_context(cfg.n_actions, cfg.dim_action_context)
     env = BanditEnv(cfg.n_actions, cfg.dim_context, action_context)
     policies = [

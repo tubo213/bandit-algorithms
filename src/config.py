@@ -5,6 +5,7 @@ import yaml
 
 @dataclass
 class Config:
+    seed: int
     bs: int
     step: int
     n_actions: int
