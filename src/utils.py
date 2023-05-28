@@ -1,11 +1,10 @@
 import numpy as np
-import yaml
 
 
 def set_seed(seed):
     np.random.seed(seed)
 
 
-def load_yaml(path):
-    with open(path, "r") as f:
-        return yaml.safe_load(f, Loader=yaml.FullLoader)
+def concat_context_and_action_context(context, action_context):
+    n_contexts = context.shape[0]
+    return np.concatenate([context, np.tile(action_context, (n_contexts, 1))], axis=1)
