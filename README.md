@@ -18,7 +18,7 @@ dim_action_context: 15
 実行
 
 ```bash
-poetry run python main.py --exp-name sample
+poetry run python bin/run.py --exp-name sample
 ```
 
 # Results
