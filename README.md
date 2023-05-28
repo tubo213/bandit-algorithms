@@ -7,7 +7,12 @@ banditを色々実装してみる
 
 ```yaml
 # yaml/sample.yaml
-n_actions: 2
+seed: 3090
+bs: 1 # batch size
+step: 5000
+n_actions: 100
+dim_context: 10
+dim_action_context: 15
 ```
 
 実行
