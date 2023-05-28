@@ -548,6 +548,14 @@ slack = ["slack-sdk"]
 telegram = ["requests"]
 
 [[package]]
+name = "types-pyyaml"
+version = "6.0.12.10"
+description = "Typing stubs for PyYAML"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "typing-extensions"
 version = "4.6.2"
 description = "Backported and Experimental Type Hints for Python 3.7+"
@@ -578,7 +586,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "flake8 (<5)", "pytest-co
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8.1,<4.0"
-content-hash = "a3009d117a86b365492f2811b55cbb51d6ca8159f8bd2a55f326936ad2ec772f"
+content-hash = "9f1f6d4aafc0a93c45e1dd437dbf9305c51d71e8fcb788deb06d5271417f4e27"
 
 [metadata.files]
 black = []
@@ -678,6 +686,7 @@ tomli = [
 ]
 torch = []
 tqdm = []
+types-pyyaml = []
 typing-extensions = []
 tzdata = []
 zipp = []
