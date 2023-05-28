@@ -8,6 +8,7 @@ banditを色々実装してみる
 ```yaml
 # yaml/sample.yaml
 seed: 3090
+n_trials: 15
 bs: 1 # batch size
 step: 5000
 n_actions: 100

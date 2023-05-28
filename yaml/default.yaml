@@ -1,6 +1,7 @@
-seed: 3090
+seed: 88
+n_trials: 15
 bs: 1
-step: 5000
-n_actions: 100
+step: 500
+n_actions: 50
 dim_context: 10
 dim_action_context: 15
