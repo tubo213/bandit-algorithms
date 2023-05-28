@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import click
 import matplotlib.pyplot as plt
@@ -40,7 +40,7 @@ def run_simulation(env: BanditEnv, policies: List[AbstractPolicy], bs: int, step
     match_action = np.zeros((step * bs, len(policies)))
     regret = np.zeros((step * bs, len(policies)))
 
-    for i in tqdm(range(step), desc="Run Simulation..."):
+    for i in tqdm(range(step), leave=False):
         context = env.get_context(bs)
         reward = env.get_reward(context)
         expected_action = np.argmax(reward, axis=1)
@@ -66,17 +66,46 @@ def run_simulation(env: BanditEnv, policies: List[AbstractPolicy], bs: int, step
     return result
 
 
-def plot_results(result: ExpResult, save_path: str):
-    fig, axes = plt.subplots(1, 2, figsize=(7 * 2, 5))
+def draw_std(mean: np.ndarray, std: np.ndarray, labels: List[str], ax: plt.Axes, min_: Optional[float] = None, max_: Optional[float] = None):
+    x = np.arange(len(mean))
+    lower = mean - std
+    upper = mean + std
 
+    if min_ is not None:
+        lower = np.clip(lower, min_, None)
+    if max_ is not None:
+        upper = np.clip(upper, None, max_)
+
+    for i in range(len(labels)):
+        ax.fill_between(
+            x,
+            lower[:, i],
+            upper[:, i],
+            alpha=0.3,
+        )
+
+
+def plot_results(results: List[ExpResult], save_path: str):
+    # collect results
+    policy_names = results[0].policy_names
+    correct_action_rates = np.array([result.correct_action_rate for result in results])
+    cum_regrets = np.array([result.cum_regret for result in results])
+    correct_action_rate = correct_action_rates.mean(axis=0)
+    correct_action_rate_std = correct_action_rates.std(axis=0)
+    cum_regret = cum_regrets.mean(axis=0)
+    cum_regret_std = cum_regrets.std(axis=0)
+
+    fig, axes = plt.subplots(1, 2, figsize=(7 * 2, 5))
+    axes[0].plot(correct_action_rate, label=policy_names)
+    draw_std(correct_action_rate, correct_action_rate_std, policy_names, axes[0], min_=0, max_=1)
     axes[0].set_title("Correct Action Rate", fontsize=20)
-    axes[0].plot(result.correct_action_rate, label=result.policy_names)
     axes[0].set_ylim(0, 1)
     axes[0].set_xlabel("Step", fontsize=15)
     axes[0].legend()
 
+    axes[1].plot(cum_regret, label=policy_names)
+    draw_std(cum_regret, cum_regret_std, policy_names, axes[1])
     axes[1].set_title("Regret", fontsize=20)
-    axes[1].plot(result.cum_regret, label=result.policy_names)
     axes[1].set_xlabel("Step", fontsize=15)
     axes[1].legend()
 
@@ -93,7 +122,10 @@ def main(exp_name: str):
 
     # experiment
     env, policies = set_up(cfg)
-    results = run_simulation(env, policies, cfg.bs, cfg.step)
+    results = []
+    for _ in tqdm(range(cfg.n_trials), desc="Run Experiment..."):
+        result = run_simulation(env, policies, cfg.bs, cfg.step)
+        results.append(result)
 
     # plot
     save_path = f"./results/{exp_name}.png"
