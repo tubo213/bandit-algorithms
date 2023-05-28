@@ -1,0 +1,5 @@
+bs: 1
+step: 5000
+n_actions: 100
+dim_context: 10
+dim_action_context: 15
