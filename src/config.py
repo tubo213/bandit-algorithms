@@ -1,6 +1,9 @@
+import logging
 from dataclasses import dataclass
 
 import yaml
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
 
 @dataclass
@@ -22,7 +25,7 @@ def load_config(path: str, default_path: str) -> Config:
     # use default config
     for key, value in default_cfg.items():
         if key not in cfg:
-            print(f"Use default config: {key}: {value}")
+            logging.info(f"Use default config: {key}: {value}")
             cfg[key] = value
 
     return Config(**cfg)
