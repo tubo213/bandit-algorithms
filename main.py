@@ -56,13 +56,14 @@ def plot_results(result: ExpResult, save_path: str):
 
     axes[0].set_title("Correct Action Rate", fontsize=20)
     axes[0].plot(result.correct_action_rate, label=result.policy_names)
+    axes[0].set_ylim(0, 1)
     axes[0].set_xlabel("Step", fontsize=15)
     axes[0].legend()
 
     axes[1].set_title("Regret", fontsize=20)
     axes[1].plot(result.cum_regret, label=result.policy_names)
-    axes[1].legend()
     axes[1].set_xlabel("Step", fontsize=15)
+    axes[1].legend()
 
     fig.savefig(save_path)
 
