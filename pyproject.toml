@@ -4,6 +4,10 @@ version = "0.1.0"
 description = ""
 authors = ["tubo213"]
 
+packages = [
+    { include = "src"}
+]
+
 [tool.poetry.dependencies]
 python = ">=3.8.1,<4.0"
 numpy = "^1.24.3"
