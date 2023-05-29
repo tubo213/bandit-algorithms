@@ -1,4 +1,5 @@
 import warnings
+from typing import Optional
 
 import numpy as np
 
@@ -8,7 +9,7 @@ warnings.filterwarnings("ignore")
 
 
 class AbstractPolicy:
-    def select_action(self, context):
+    def select_action(self, context: np.ndarray):
         raise NotImplementedError
 
     def update_params(self, action, reward, context):
@@ -16,29 +17,29 @@ class AbstractPolicy:
 
 
 class RandomPolicy(AbstractPolicy):
-    def __init__(self, n_actions):
+    def __init__(self, n_actions: int):
         self.n_actions = n_actions
 
-    def select_action(self, context):
+    def select_action(self, context: np.ndarray):
         return np.random.choice(self.n_actions, size=context.shape[0])
 
 
 class EpsilonGreedyPolicy(AbstractPolicy):
-    def __init__(self, n_actions, epsilon=0.01):
+    def __init__(self, n_actions: int, epsilon: float = 0.01):
         self.n_actions = n_actions
         self.epsilon = epsilon
         self.rewars = np.zeros(n_actions)
         self.cnts = np.zeros(n_actions)
         self.e = np.zeros(n_actions)
 
-    def select_action(self, context):
+    def select_action(self, context: np.ndarray):
         n = context.shape[0]
         p = np.random.uniform(size=n)
         action = np.where(p < self.epsilon, np.random.choice(self.n_actions, size=n), np.argmax(self.e))
 
         return action
 
-    def update_params(self, action, reward, _):
+    def update_params(self, action: np.ndarray, reward: np.ndarray, _):
         n = action.shape[0]
         for i in range(n):
             self.cnts[action[i]] += 1
@@ -47,19 +48,19 @@ class EpsilonGreedyPolicy(AbstractPolicy):
 
 
 class SoftMaxPolicy(AbstractPolicy):
-    def __init__(self, n_actions):
+    def __init__(self, n_actions: int):
         self.n_actions = n_actions
         self.rewars = np.zeros(n_actions)
         self.cnts = np.zeros(n_actions)
         self.e = np.ones(n_actions)
 
-    def select_action(self, context):
+    def select_action(self, context: np.ndarray):
         prob = self.softmax(self.e)
         action = np.random.choice(self.n_actions, size=context.shape[0], p=prob)
 
         return action
 
-    def update_params(self, action, reward, _):
+    def update_params(self, action: np.ndarray, reward: np.ndarray, _):
         n = action.shape[0]
         for i in range(n):
             self.cnts[action[i]] += 1
@@ -72,7 +73,7 @@ class SoftMaxPolicy(AbstractPolicy):
 
 
 class UCBPolicy(AbstractPolicy):
-    def __init__(self, n_actions, alpha=1):
+    def __init__(self, n_actions: int, alpha=1):
         self.n_actions = n_actions
         self.alpha = alpha
         self.rewars = np.zeros(n_actions)
@@ -80,7 +81,7 @@ class UCBPolicy(AbstractPolicy):
         self.e = np.zeros(n_actions)
         self.eps = 1e-6
 
-    def select_action(self, context):
+    def select_action(self, context: np.ndarray):
         n = context.shape[0]
         t = np.sum(self.cnts)
         ucb_scores = []
@@ -91,7 +92,7 @@ class UCBPolicy(AbstractPolicy):
 
         return np.full(n, np.argmax(ucb_scores))
 
-    def update_params(self, action, reward, _):
+    def update_params(self, action: np.ndarray, reward: np.ndarray, _):
         n = action.shape[0]
         for i in range(n):
             self.cnts[action[i]] += 1
@@ -100,7 +101,7 @@ class UCBPolicy(AbstractPolicy):
 
 
 class LinUCBPolicy(AbstractPolicy):
-    def __init__(self, n_actions, dim_context, alpha=1, action_context=None):
+    def __init__(self, n_actions: int, dim_context: int, alpha: float = 1.0, action_context: Optional[np.ndarray] = None):
         self.n_actions = n_actions
         self.dim_context = dim_context
         self.action_context = action_context if action_context is not None else np.identity(n_actions)
@@ -110,7 +111,7 @@ class LinUCBPolicy(AbstractPolicy):
         self.A_inv = np.identity(dim)
         self.b = np.zeros((dim, 1))
 
-    def select_action(self, context):
+    def select_action(self, context: np.ndarray):
         theta_hat = (self.A_inv @ self.b).flatten()
         ucb_list = []
         for action in range(self.n_actions):
@@ -123,7 +124,7 @@ class LinUCBPolicy(AbstractPolicy):
         ucb = np.stack(ucb_list, axis=1)
         return np.argmax(ucb, axis=1)
 
-    def update_params(self, action, reward, context):
+    def update_params(self, action: np.ndarray, reward: np.ndarray, context: np.ndarray):
         n = action.shape[0]
         x = np.concatenate([context, self.action_context[action]], axis=1)
 
