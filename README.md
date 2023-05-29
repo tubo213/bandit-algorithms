@@ -9,6 +9,7 @@
 - LinUCB
 
 # 環境構築
+
 '''bash
 poetry install
 '''
