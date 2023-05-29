@@ -1,5 +1,5 @@
-seed: 88
-n_trials: 15
+seed: 0
+n_trials: 10
 bs: 1
 step: 500
 n_actions: 50

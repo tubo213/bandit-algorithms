@@ -20,7 +20,6 @@ class ExpResult:
 
 
 def set_up(cfg: Config) -> Tuple[BanditEnv, List[AbstractPolicy]]:
-    set_seed(cfg.seed)
     action_context = generate_action_context(cfg.n_actions, cfg.dim_action_context)
     env = BanditEnv(cfg.n_actions, cfg.dim_context, action_context, cfg.seed)
     policies = [
@@ -123,7 +122,8 @@ def main(exp_name: str):
     # experiment
     env, policies = set_up(cfg)
     results = []
-    for _ in tqdm(range(cfg.n_trials), desc="Run Experiment..."):
+    for i in tqdm(range(cfg.n_trials), desc="Run Experiment..."):
+        set_seed(cfg.seed + i)
         result = run_simulation(env, policies, cfg.bs, cfg.step)
         results.append(result)
 
