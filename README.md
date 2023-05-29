@@ -10,9 +10,9 @@
 
 # 環境構築
 
-'''bash
+```bash
 poetry install
-'''
+```
 
 # Usage
 
