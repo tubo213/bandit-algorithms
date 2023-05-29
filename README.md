@@ -1,6 +1,11 @@
 # bandit
 banditを色々実装してみる
 
+# 環境構築
+'''bash
+poetry install
+'''
+
 # Usage
 
 ./yaml/に設定ファイルを置く.
