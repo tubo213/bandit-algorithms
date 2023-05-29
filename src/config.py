@@ -6,7 +6,7 @@ import yaml
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
 
-@dataclass
+@dataclass(frozen=True)
 class Config:
     seed: int
     n_trials: int
