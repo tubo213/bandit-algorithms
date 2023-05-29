@@ -20,7 +20,7 @@ class ExpResult:
 
 
 def set_up(cfg: Config) -> Tuple[BanditEnv, List[AbstractPolicy]]:
-    action_context = generate_action_context(cfg.n_actions, cfg.dim_action_context)
+    action_context = generate_action_context(cfg.n_actions, cfg.dim_action_context, cfg.seed)
     env = BanditEnv(cfg.n_actions, cfg.dim_context, action_context, cfg.seed)
     policies = [
         RandomPolicy(cfg.n_actions),
