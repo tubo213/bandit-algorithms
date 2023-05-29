@@ -8,8 +8,13 @@
 - UCB
 - LinUCB
 
-# 環境構築
+# Enviroment
 
+## Requirements
+- python >=3.8.1,<4.0
+- poetry
+
+## Build
 ```bash
 poetry install
 ```
