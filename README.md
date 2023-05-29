@@ -1,5 +1,12 @@
 # bandit
-banditを色々実装してみる
+バンディットアルゴリズムを色々実装してみる
+
+## 実装済みの方策
+- random
+- epsilon-greedy
+- softmax
+- UCB
+- LinUCB
 
 # 環境構築
 '''bash
