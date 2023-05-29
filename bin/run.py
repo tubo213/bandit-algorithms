@@ -111,15 +111,7 @@ def plot_results(results: List[ExpResult], save_path: str):
     fig.savefig(save_path)
 
 
-@click.command()
-@click.option("--exp-name", type=str, default="debug", help="Experiment name")
-def main(exp_name: str):
-    # load config
-    yaml_path = f"./yaml/{exp_name}.yaml"
-    default_yaml_path = "./yaml/default.yaml"
-    cfg = load_config(yaml_path, default_yaml_path)
-
-    # experiment
+def run_experinemt(cfg: Config, exp_name: str):
     env, policies = set_up(cfg)
     results = []
     for i in tqdm(range(cfg.n_trials), desc="Run Experiment..."):
@@ -127,9 +119,18 @@ def main(exp_name: str):
         result = run_simulation(env, policies, cfg.bs, cfg.step)
         results.append(result)
 
-    # plot
     save_path = f"./results/{exp_name}.png"
     plot_results(results, save_path)
+
+
+@click.command()
+@click.option("--exp-name", type=str, default="debug", help="Experiment name")
+def main(exp_name: str):
+    yaml_path = f"./yaml/{exp_name}.yaml"
+    default_yaml_path = "./yaml/default.yaml"
+    cfg = load_config(yaml_path, default_yaml_path)
+
+    run_experinemt(cfg, exp_name)
 
 
 if __name__ == "__main__":
