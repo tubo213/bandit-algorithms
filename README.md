@@ -55,4 +55,5 @@ k: 腕の数
 - k=100
 ![](results/k_100.png)
 
-
+# References
+- https://github.com/st-tech/zr-obp
