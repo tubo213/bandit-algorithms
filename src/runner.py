@@ -1,11 +1,11 @@
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
+from typing import List
 
 import numpy as np
 from joblib import Parallel, delayed
 
 from src.policy.base import AbstractContextFreePolicy, AbstractLinearPolicy
-from src.simulation_env import BanditEnv, generate_action_context
+from src.simulation_env import BanditEnv
 from src.type import POLICY_TYPE
 from src.utils import tqdm_joblib
 
@@ -24,6 +24,7 @@ class Runner:
         self.policy_names = [policy.__class__.__name__ for policy in policies]
 
     def run_experiment(self, bs: int, step: int, n_trials: int) -> List[ExpResult]:
+        # run experiments in parallel
         with tqdm_joblib(n_trials, desc="Running experiments.."):
             results: List[ExpResult] = Parallel(n_jobs=-1)(
                 delayed(self.run_simulation)(bs, step) for _ in range(n_trials)
