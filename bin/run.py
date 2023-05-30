@@ -1,25 +1,15 @@
-from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
 import click
 import matplotlib.pyplot as plt
 import numpy as np
-from joblib import Parallel, delayed
 
 from src.config import Config, load_config
-from src.policy.base import AbstractContextFreePolicy, AbstractLinearPolicy
 from src.policy.contextfree import EpsilonGreedyPolicy, RandomPolicy, SoftMaxPolicy, UCBPolicy
 from src.policy.linear import LinUCBPolicy
+from src.runner import ExpResult, Runner
 from src.simulation_env import BanditEnv, generate_action_context
 from src.type import POLICY_TYPE
-from src.utils import tqdm_joblib
-
-
-@dataclass(frozen=True)
-class ExpResult:
-    policy_names: List[str]
-    correct_action_rate: np.ndarray
-    cum_regret: np.ndarray
 
 
 def set_up(cfg: Config) -> Tuple[BanditEnv, List[POLICY_TYPE]]:
@@ -34,44 +24,6 @@ def set_up(cfg: Config) -> Tuple[BanditEnv, List[POLICY_TYPE]]:
     ]
 
     return env, policies
-
-
-def run_simulation(env: BanditEnv, policies: List[POLICY_TYPE], bs: int, step: int) -> ExpResult:
-    policy_names = [policy.__class__.__name__ for policy in policies]
-    policy_actions = np.zeros((step * bs, len(policies)))
-    match_action = np.zeros((step * bs, len(policies)))
-    regret = np.zeros((step * bs, len(policies)))
-
-    for i in range(step):
-        context = env.get_context(bs)
-        reward = env.get_reward(context)
-        expected_action = np.argmax(reward, axis=1)
-        expected_rewards = reward[np.arange(bs), expected_action]
-        for j, policy in enumerate(policies):
-            if isinstance(policy, AbstractContextFreePolicy):
-                n = context.shape[0]
-                policy_action = policy.select_action(n)
-                policy_reward = reward[np.arange(bs), policy_action]
-                policy.update_params(policy_action, policy_reward)
-            elif isinstance(policy, AbstractLinearPolicy):
-                policy_action = policy.select_action(context)
-                policy_reward = reward[np.arange(bs), policy_action]
-                policy.update_params(policy_action, policy_reward, context)
-
-            policy_actions[i * bs : (i + 1) * bs, j] = policy_action
-            match_action[i * bs : (i + 1) * bs, j] = (policy_action == expected_action).astype(int)
-            regret[i * bs : (i + 1) * bs, j] = expected_rewards - policy_reward
-
-    correct_action_rate = match_action.cumsum(axis=0) / (np.arange(step * bs) + 1).reshape(-1, 1)
-    cum_regret = regret.cumsum(axis=0)
-
-    result = ExpResult(
-        policy_names=policy_names,
-        correct_action_rate=correct_action_rate,
-        cum_regret=cum_regret,
-    )
-
-    return result
 
 
 def draw_std(
@@ -127,18 +79,6 @@ def plot_results(results: List[ExpResult], save_path: str):
     fig.savefig(save_path)
 
 
-def run_experinemt(cfg: Config, exp_name: str):
-    env, policies = set_up(cfg)
-
-    # run experiment in parallel
-    args = [(env, policies, cfg.bs, cfg.step) for _ in range(cfg.n_trials)]
-    with tqdm_joblib(cfg.n_trials, desc="Run Experiment..."):
-        results = Parallel(n_jobs=-1)(delayed(run_simulation)(*arg) for arg in args)
-
-    save_path = f"./results/{exp_name}.png"
-    plot_results(results, save_path)
-
-
 @click.command()
 @click.option("--exp-name", type=str, default="debug", help="Experiment name")
 def main(exp_name: str):
@@ -146,7 +86,11 @@ def main(exp_name: str):
     default_yaml_path = "./yaml/default.yaml"
     cfg = load_config(yaml_path, default_yaml_path)
 
-    run_experinemt(cfg, exp_name)
+    env, policies = set_up(cfg)
+    runner = Runner(env, policies)
+    results = runner.run_experiment(cfg.bs, cfg.step, cfg.n_trials)
+    save_path = f"./results/{exp_name}.png"
+    plot_results(results, save_path)
 
 
 if __name__ == "__main__":
