@@ -4,7 +4,7 @@ from typing import List, Optional, Tuple
 import click
 import matplotlib.pyplot as plt
 import numpy as np
-from tqdm import tqdm
+from joblib import Parallel, delayed
 
 from src.config import Config, load_config
 from src.policy.base import AbstractContextFreePolicy, AbstractLinearPolicy
@@ -12,7 +12,7 @@ from src.policy.contextfree import EpsilonGreedyPolicy, RandomPolicy, SoftMaxPol
 from src.policy.linear import LinUCBPolicy
 from src.simulation_env import BanditEnv, generate_action_context
 from src.type import POLICY_TYPE
-from src.utils import set_seed
+from src.utils import tqdm_joblib
 
 
 @dataclass(frozen=True)
@@ -42,7 +42,7 @@ def run_simulation(env: BanditEnv, policies: List[POLICY_TYPE], bs: int, step: i
     match_action = np.zeros((step * bs, len(policies)))
     regret = np.zeros((step * bs, len(policies)))
 
-    for i in tqdm(range(step), leave=False):
+    for i in range(step):
         context = env.get_context(bs)
         reward = env.get_reward(context)
         expected_action = np.argmax(reward, axis=1)
@@ -129,11 +129,11 @@ def plot_results(results: List[ExpResult], save_path: str):
 
 def run_experinemt(cfg: Config, exp_name: str):
     env, policies = set_up(cfg)
-    results = []
-    for i in tqdm(range(cfg.n_trials), desc="Run Experiment..."):
-        set_seed(cfg.seed + i)
-        result = run_simulation(env, policies, cfg.bs, cfg.step)
-        results.append(result)
+
+    # run experiment in parallel
+    args = [(env, policies, cfg.bs, cfg.step) for _ in range(cfg.n_trials)]
+    with tqdm_joblib(cfg.n_trials, desc="Run Experiment..."):
+        results = Parallel(n_jobs=-1)(delayed(run_simulation)(*arg) for arg in args)
 
     save_path = f"./results/{exp_name}.png"
     plot_results(results, save_path)
