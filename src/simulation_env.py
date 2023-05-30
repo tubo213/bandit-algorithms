@@ -8,10 +8,18 @@ from src.utils import concat_context_and_action_context, set_seed
 
 
 class BanditEnv:
-    def __init__(self, n_actions: int, dim_context: int, action_context: Optional[np.ndarray] = None, random_state: int = 11111):
+    def __init__(
+        self,
+        n_actions: int,
+        dim_context: int,
+        action_context: Optional[np.ndarray] = None,
+        random_state: int = 11111,
+    ):
         self.n_actions = n_actions
         self.dim_context = dim_context
-        self.action_context = action_context if action_context is not None else np.identity(n_actions)
+        self.action_context = (
+            action_context if action_context is not None else np.identity(n_actions)
+        )
         self.dim_action_context = self.action_context.shape[1]
         self.model = MLP(dim_context + self.dim_action_context)
         set_seed(random_state)
@@ -52,9 +60,13 @@ class MLP(nn.Module):
         return x
 
 
-def generate_action_context(n_actions: int, dim_action_context: int, random_state: int = 11111) -> np.ndarray:
+def generate_action_context(
+    n_actions: int, dim_action_context: int, random_state: int = 11111
+) -> np.ndarray:
     np.random.seed(random_state)
-    action_context = np.random.uniform(-1, 1, size=(n_actions, dim_action_context)).cumsum(axis=1) ** 2
+    action_context = (
+        np.random.uniform(-1, 1, size=(n_actions, dim_action_context)).cumsum(axis=1) ** 2
+    )
     action_context = (action_context - action_context.mean(axis=0)) / action_context.std(axis=0)
 
     return action_context
