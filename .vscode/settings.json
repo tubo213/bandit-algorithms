@@ -11,11 +11,11 @@
     "python.linting.flake8Enabled": true,
     "python.linting.flake8Args": [
         "--ignore=W293, W503, W504, E402, F401, F403, E203",
-        "--max-line-length=150",
+        "--max-line-length=99",
         "--max-complexity=20"
     ],
     "python.formatting.blackArgs": [
-        "--line-length=150",
+        "--line-length=99",
     ],
     "[python]": {
         "editor.insertSpaces": true,

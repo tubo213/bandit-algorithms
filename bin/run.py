@@ -7,8 +7,11 @@ import numpy as np
 from tqdm import tqdm
 
 from src.config import Config, load_config
-from src.policy import AbstractPolicy, EpsilonGreedyPolicy, LinUCBPolicy, RandomPolicy, SoftMaxPolicy, UCBPolicy
+from src.policy.base import AbstractContextFreePolicy, AbstractLinearPolicy
+from src.policy.contextfree import EpsilonGreedyPolicy, RandomPolicy, SoftMaxPolicy, UCBPolicy
+from src.policy.linear import LinUCBPolicy
 from src.simulation_env import BanditEnv, generate_action_context
+from src.type import POLICY_TYPE
 from src.utils import set_seed
 
 
@@ -19,10 +22,10 @@ class ExpResult:
     cum_regret: np.ndarray
 
 
-def set_up(cfg: Config) -> Tuple[BanditEnv, List[AbstractPolicy]]:
+def set_up(cfg: Config) -> Tuple[BanditEnv, List[POLICY_TYPE]]:
     action_context = generate_action_context(cfg.n_actions, cfg.dim_action_context, cfg.seed)
     env = BanditEnv(cfg.n_actions, cfg.dim_context, action_context, cfg.seed)
-    policies = [
+    policies: List[POLICY_TYPE] = [
         RandomPolicy(cfg.n_actions),
         EpsilonGreedyPolicy(cfg.n_actions, 0.03),
         SoftMaxPolicy(cfg.n_actions),
@@ -33,7 +36,7 @@ def set_up(cfg: Config) -> Tuple[BanditEnv, List[AbstractPolicy]]:
     return env, policies
 
 
-def run_simulation(env: BanditEnv, policies: List[AbstractPolicy], bs: int, step: int) -> ExpResult:
+def run_simulation(env: BanditEnv, policies: List[POLICY_TYPE], bs: int, step: int) -> ExpResult:
     policy_names = [policy.__class__.__name__ for policy in policies]
     policy_actions = np.zeros((step * bs, len(policies)))
     match_action = np.zeros((step * bs, len(policies)))
@@ -45,9 +48,15 @@ def run_simulation(env: BanditEnv, policies: List[AbstractPolicy], bs: int, step
         expected_action = np.argmax(reward, axis=1)
         expected_rewards = reward[np.arange(bs), expected_action]
         for j, policy in enumerate(policies):
-            policy_action = policy.select_action(context)
-            policy_reward = reward[np.arange(bs), policy_action]
-            policy.update_params(policy_action, policy_reward, context)
+            if isinstance(policy, AbstractContextFreePolicy):
+                n = context.shape[0]
+                policy_action = policy.select_action(n)
+                policy_reward = reward[np.arange(bs), policy_action]
+                policy.update_params(policy_action, policy_reward)
+            elif isinstance(policy, AbstractLinearPolicy):
+                policy_action = policy.select_action(context)
+                policy_reward = reward[np.arange(bs), policy_action]
+                policy.update_params(policy_action, policy_reward, context)
 
             policy_actions[i * bs : (i + 1) * bs, j] = policy_action
             match_action[i * bs : (i + 1) * bs, j] = (policy_action == expected_action).astype(int)
@@ -65,7 +74,14 @@ def run_simulation(env: BanditEnv, policies: List[AbstractPolicy], bs: int, step
     return result
 
 
-def draw_std(mean: np.ndarray, std: np.ndarray, labels: List[str], ax: plt.Axes, min_: Optional[float] = None, max_: Optional[float] = None):
+def draw_std(
+    mean: np.ndarray,
+    std: np.ndarray,
+    labels: List[str],
+    ax: plt.Axes,
+    min_: Optional[float] = None,
+    max_: Optional[float] = None,
+):
     x = np.arange(len(mean))
     lower = mean - std
     upper = mean + std
