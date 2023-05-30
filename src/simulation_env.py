@@ -21,20 +21,19 @@ class BanditEnv:
             action_context if action_context is not None else np.identity(n_actions)
         )
         self.dim_action_context = self.action_context.shape[1]
-        self.model = MLP(dim_context + self.dim_action_context)
+        self.model = MLP(dim_context + self.dim_action_context).train()
         set_seed(random_state)
 
     def get_context(self, n: int) -> np.ndarray:
         return np.random.uniform(-1, 1, size=(n, self.dim_context))
 
     def get_reward(self, context: np.ndarray) -> np.ndarray:
-        n = context.shape[0]
-        e = np.random.normal(0, 0.5, size=n)
         reward_list = []
         for i in range(self.n_actions):
             x_i = concat_context_and_action_context(context, self.action_context[[i]])
             x_i = torch.from_numpy(x_i).float()
-            reward = self.model(x_i).detach().numpy().flatten() + e
+            with torch.no_grad():
+                reward = self.model(x_i).detach().numpy().flatten()
             reward_list.append(reward)
         reward = np.stack(reward_list, axis=1)
 
