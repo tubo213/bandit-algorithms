@@ -2,13 +2,23 @@
 バンディットアルゴリズムを色々実装してみる
 
 ## 実装済みの方策
-### Contextfree
+
+### Default
+
+#### Contextfree
 - random
 - epsilon-greedy
 - softmax
 - UCB
-### Linear
+#### Linear
 - LinUCB
+
+### Multiple-Play Bandit Problem
+
+#### Contextfree
+- random
+- PBM-UCB
+- PBM-PIE
 
 # Enviroment
 
