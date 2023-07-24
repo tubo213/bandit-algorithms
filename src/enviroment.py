@@ -52,7 +52,7 @@ class MLP(nn.Module):
         task_type: TASK_TYPES = "regression",
     ):
         super().__init__()
-        module_list = [nn.Linear(dim, dim_hidden), nn.SELU()]
+        module_list = [nn.Linear(dim, dim_hidden), nn.Dropout(0.1)]
 
         if n_hidden > 2:
             for _ in range(n_hidden - 2):
