@@ -4,8 +4,8 @@ from typing import List
 import numpy as np
 from joblib import Parallel, delayed
 
+from src.enviroment import Environment
 from src.policy.base import AbstractContextFreePolicy, AbstractLinearPolicy
-from src.simulation_env import BanditEnv
 from src.type import POLICY_TYPE
 from src.utils import tqdm_joblib
 
@@ -18,7 +18,7 @@ class ExpResult:
 
 
 class Runner:
-    def __init__(self, env: BanditEnv, policies: List[POLICY_TYPE]):
+    def __init__(self, env: Environment, policies: List[POLICY_TYPE]):
         self.env = env
         self.policies = policies
         self.policy_names = [policy.__class__.__name__ for policy in policies]
