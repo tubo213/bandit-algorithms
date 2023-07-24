@@ -12,3 +12,4 @@ step: 500 # number of steps
 n_actions: 50 # number of actions(number of arms)
 dim_context: 10 # dimension of context
 dim_action_context: 15 # dimension of action context
+task_type: "regression" # regression or classification
