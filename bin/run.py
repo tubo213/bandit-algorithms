@@ -1,8 +1,9 @@
+import os
 from typing import List, Tuple
 
-import click
+import hydra
 
-from src.config import Config, load_config
+from src.config import Config
 from src.evaluator import Evaluator
 from src.policy.contextfree import EpsilonGreedyPolicy, RandomPolicy, SoftMaxPolicy, UCBPolicy
 from src.policy.linear import LinUCBPolicy
@@ -25,17 +26,12 @@ def set_up(cfg: Config) -> Tuple[BanditEnv, List[POLICY_TYPE]]:
     return env, policies
 
 
-@click.command()
-@click.option("--exp-name", type=str, default="debug", help="Experiment name")
-def main(exp_name: str):
-    yaml_path = f"./yaml/{exp_name}.yaml"
-    default_yaml_path = "./yaml/default.yaml"
-    cfg = load_config(yaml_path, default_yaml_path)
-
+@hydra.main(config_path="../conf", config_name="default", version_base="1.2")
+def main(cfg: Config):
     env, policies = set_up(cfg)
     runner = Runner(env, policies)
     results = runner.run_experiment(cfg.bs, cfg.step, cfg.n_trials)
-    save_path = f"./results/{exp_name}.png"
+    save_path = os.getcwd() + "/output.png"
     Evaluator.plot_results(results, save_path)
 
 

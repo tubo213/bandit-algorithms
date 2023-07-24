@@ -1,3 +1,10 @@
+hydra:
+  job:
+    chdir: true
+  sweep:
+    dir: outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    subdir: ${hydra.job.override_dirname}
+
 seed: 0 # random seed
 n_trials: 20 # number of trials
 bs: 1 # batch size

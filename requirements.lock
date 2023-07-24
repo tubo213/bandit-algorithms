@@ -8,7 +8,6 @@
 
 -e file:.
 antlr4-python3-runtime==4.9.3
-click==8.1.6
 cmake==3.27.0
 contourpy==1.1.0
 cycler==0.11.0
@@ -40,6 +39,7 @@ packaging==23.1
 pillow==10.0.0
 pyparsing==3.0.9
 python-dateutil==2.8.2
+pytorch-pfn-extras==0.7.1
 pyyaml==6.0.1
 six==1.16.0
 sympy==1.12
