@@ -2,7 +2,7 @@ from typing import Optional
 
 import numpy as np
 
-from src.policy.base import AbstractLinearPolicy
+from src.policy.default.base import AbstractLinearPolicy
 from src.utils import concat_context_and_action_context
 
 

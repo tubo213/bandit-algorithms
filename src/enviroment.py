@@ -4,8 +4,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from src.utils import concat_context_and_action_context, set_seed
 from src.type import TASK_TYPES
+from src.utils import concat_context_and_action_context, set_seed
 
 
 class Environment:

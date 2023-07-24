@@ -6,8 +6,8 @@ import hydra
 from src.config import Config
 from src.enviroment import Environment, generate_action_context
 from src.evaluator import Evaluator
-from src.policy.contextfree import EpsilonGreedyPolicy, RandomPolicy, SoftMaxPolicy, UCBPolicy
-from src.policy.linear import LinUCBPolicy
+from src.policy.default.contextfree import EpsilonGreedyPolicy, RandomPolicy, SoftMaxPolicy, UCBPolicy
+from src.policy.default.linear import LinUCBPolicy
 from src.runner import Runner
 from src.type import POLICY_TYPE
 
