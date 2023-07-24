@@ -1,9 +1,9 @@
-import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Optional
 
-import yaml
+import numpy as np
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+from src.type import TASK_TYPES
 
 
 @dataclass(frozen=True)
@@ -15,18 +15,32 @@ class Config:
     n_actions: int
     dim_context: int
     dim_action_context: int
+    task_type: TASK_TYPES
 
 
-def load_config(path: str, default_path: str) -> Config:
-    with open(path, "r") as f:
-        cfg = yaml.safe_load(f)
-    with open(default_path, "r") as f:
-        default_cfg = yaml.safe_load(f)
+@dataclass
+class PBMConfig:
+    seed: int
+    n_trials: int
+    bs: int
+    step: int
+    n_actions: int
+    dim_context: int
+    dim_action_context: int
+    examination: np.ndarray = field(default_factory=lambda: np.empty(0))
+    n_play: int = -1
+    play_rate: float = -1
 
-    # use default config
-    for key, value in default_cfg.items():
-        if key not in cfg:
-            logging.info(f"Use default config: {key}: {value}")
-            cfg[key] = value
+    def __post_init__(self):
+        if self.examination != np.empty(0):
+            self.examination = np.array(self.examination)
+            self.n_play = len(self.examination)
+        elif self.n_play != -1:
+            self.examination = 1 / np.arange(1, self.n_play + 1)
+        elif self.play_rate != -1:
+            self.n_play = int(self.n_actions * self.play_rate)
+            self.examination = 1 / np.arange(1, self.n_play + 1)
+        else:
+            raise ValueError("Either examination or n_play or play_rate must be specified.")
 
-    return Config(**cfg)
+        self.relevance = 1 / np.arange(1, self.n_actions + 1)

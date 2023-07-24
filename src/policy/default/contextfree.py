@@ -2,7 +2,7 @@ import warnings
 
 import numpy as np
 
-from src.policy.base import AbstractContextFreePolicy
+from src.policy.default.base import AbstractContextFreePolicy
 
 warnings.filterwarnings("ignore")
 

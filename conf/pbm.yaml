@@ -1,0 +1,17 @@
+hydra:
+  job:
+    chdir: true
+  run:
+    dir: outputs/pbm/${hydra.job.override_dirname}
+  sweep:
+    dir: outputs/pbm/
+    subdir: ${hydra.job.override_dirname}
+
+seed: 0 # random seed
+n_trials: 20 # number of trials
+bs: 1 # batch size
+step: 500 # number of steps
+n_actions: 15 # number of actions(number of arms)
+dim_context: 10 # dimension of context
+dim_action_context: 15 # dimension of action context
+n_play: 10 # number of play

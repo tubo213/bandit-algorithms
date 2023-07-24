@@ -1,4 +1,4 @@
-# bandit
+# bandit-algorithms
 バンディットアルゴリズムを色々実装してみる
 
 ## 実装済みの方策
@@ -13,49 +13,58 @@
 # Enviroment
 
 ## Requirements
-- python >=3.8.1,<4.0
-- poetry
+- [rye](https://github.com/mitsuhiko/rye)
 
 ## Build
 ```bash
-poetry install
+rye sync
 ```
 
 # Usage
-
-./yaml/に設定ファイルを置く.
-
-```yaml
-# yaml/sample.yaml
-seed: 3090
-n_trials: 15
-bs: 1 # batch size
-step: 5000
-n_actions: 100
-dim_context: 10
-dim_action_context: 15
+run default experiment
+```bash
+rye run python bin/run.py
 ```
 
-実行
-
+multi run
 ```bash
-poetry run python bin/run.py --exp-name sample
+rye run python bin/run.py -m n_actions=10,100,1000
 ```
 
 # Results
+
+## Default
 k: 腕の数
 
 - k=5
-![](./results/k_5.png)
+![](./resources/default/n_actions=5.png)
+
+- k=25
+![](./resources/default/n_actions=25.png)
+
+- k=125
+![](./resources/default/n_actions=125.png)
+
+- k=625
+![](resources/default/n_actions=625.png)
+
+### Multiple-Play Bandit Problem
+
+#### Position Based Model(Contextfree)
+k: 腕の数
 
 - k=10
-![](./results/k_10.png)
+![](./resources/pbm/n_actions=10.png)
 
-- k=50
-![](./results/k_50.png)
+- k=30
+![](./resources/pbm/n_actions=30.png)
 
-- k=100
-![](results/k_100.png)
+- k=60
+![](./resources/pbm/n_actions=60.png)
+
+- k=120
+![](./resources/pbm/n_actions=120.png)
+
 
 # References
 - https://github.com/st-tech/zr-obp
