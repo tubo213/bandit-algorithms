@@ -6,12 +6,15 @@ import joblib
 import numpy as np
 import torch
 from tqdm.auto import tqdm
+import os
 
 
 def set_seed(seed):
+    os.environ['PYTHONHASHSEED'] = str(seed)
     np.random.seed(seed)
     random.seed(seed)
     torch.manual_seed(seed)
+
 
 
 def concat_context_and_action_context(context, action_context):

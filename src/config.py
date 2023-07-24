@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import List
+from dataclasses import dataclass, field
+from typing import Optional
 
 import numpy as np
 
@@ -27,8 +27,20 @@ class PBMConfig:
     n_actions: int
     dim_context: int
     dim_action_context: int
-    examination: np.ndarray
+    examination: np.ndarray = field(default_factory=lambda: np.empty(0))
+    n_play: int = -1
+    play_rate: float = -1
 
     def __post_init__(self):
-        self.examination = np.array(self.examination)
-        self.n_play = len(self.examination)
+        if self.examination != np.empty(0):
+            self.examination = np.array(self.examination)
+            self.n_play = len(self.examination)
+        elif self.n_play != -1:
+            self.examination = 1 / np.arange(1, self.n_play + 1)
+        elif self.play_rate != -1:
+            self.n_play = int(self.n_actions * self.play_rate)
+            self.examination = 1 / np.arange(1, self.n_play + 1)
+        else:
+            raise ValueError("Either examination or n_play or play_rate must be specified.")
+
+        self.relevance = 1 / np.arange(1, self.n_actions + 1)

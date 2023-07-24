@@ -8,10 +8,10 @@ from src.enviroment import Environment
 from src.policy.default.base import AbstractContextFreePolicy, AbstractLinearPolicy
 from src.policy.multiple_play.base import (
     AbstractMultiplePlayContextFreePolicy,
-    AbstractMultiplePlayLinearPolicy,
 )
 from src.type import MUTIPLE_PLAY_POLICY_TYPE, POLICY_TYPE
 from src.utils import tqdm_joblib
+from src.utils import set_seed
 
 
 @dataclass(frozen=True)
@@ -28,13 +28,14 @@ class Runner:
 
     def run_experiment(self, bs: int, step: int, n_trials: int) -> List[ExpResult]:
         # run experiments in parallel
-        with tqdm_joblib(n_trials, desc="Running experiments.."):
+        with tqdm_joblib(n_trials, desc="Running experiments..."):
             results: List[ExpResult] = Parallel(n_jobs=-1)(
-                delayed(self.run_simulation)(bs, step) for _ in range(n_trials)
+                delayed(self.run_simulation)(bs, step, trial) for trial in range(n_trials)
             )
         return results
 
-    def run_simulation(self, bs: int, step: int) -> ExpResult:
+    def run_simulation(self, bs: int, step: int, trial: int) -> ExpResult:
+        set_seed(trial)
         regret = np.zeros((step * bs, len(self.policies)))
 
         for i in range(step):
@@ -63,43 +64,37 @@ class Runner:
 
 class PBMRunner:
     def __init__(
-        self, env: Environment, policies: List[MUTIPLE_PLAY_POLICY_TYPE], examination: np.ndarray
+        self, policies: List[MUTIPLE_PLAY_POLICY_TYPE], relevance: np.ndarray, examination: np.ndarray
     ):
-        self.env = env
         self.policies = policies
         self.n_policy = len(policies)
         self.policy_names = [policy.__class__.__name__ for policy in policies]
+        self.relevance = relevance # (1, K)
         self.examination = examination[None, :]  # (1, L)
         self.n_play = len(examination)
 
     def run_experiment(self, bs: int, step: int, n_trials: int) -> List[ExpResult]:
         # run experiments in parallel
-        with tqdm_joblib(n_trials, desc="Running experiments.."):
+        with tqdm_joblib(n_trials, desc="Running experiments..."):
             results: List[ExpResult] = Parallel(n_jobs=-1)(
-                delayed(self.run_simulation)(bs, step) for _ in range(n_trials)
+                delayed(self.run_simulation)(bs, step, trial) for trial in range(n_trials)
             )
         return results
 
-    def run_simulation(self, bs: int, step: int) -> ExpResult:
+    def run_simulation(self, bs: int, step: int, trial: int) -> ExpResult:
+        set_seed(trial)
         regret = np.zeros((step * bs, self.n_policy))  # (step * bs, n_policy)
 
-        for i in range(step):
-            context = self.env.get_context(bs)  # (bs, d)
-            relevance = self.env.get_reward(context)  # (bs, K)
-            top_relevance = np.sort(relevance, axis=1)[:, -self.n_play :][:, ::-1]
+        for i in range(step):# (bs, K)
+            relevance = np.tile(self.relevance, (bs, 1))  # (bs, K)
+            top_relevance = -np.sort(-relevance, axis=1)[:, : self.n_play]  # (bs, L)
             expected_reward = self.compute_reward(top_relevance)  # (bs, L)
             for j, policy in enumerate(self.policies):
                 if isinstance(policy, AbstractMultiplePlayContextFreePolicy):
-                    n = context.shape[0]
-                    policy_action = policy.select_action(n)  # (bs, L)
+                    policy_action = policy.select_action(bs)  # (bs, L)
                     policy_relevance = relevance[np.arange(bs), policy_action]  # (bs, L)
                     policy_reward = self.compute_reward(policy_relevance)  # (bs, L)
                     policy.update_params(policy_action, policy_reward)  # (bs, L)
-                elif isinstance(policy, AbstractMultiplePlayLinearPolicy):
-                    policy_action = policy.select_action(context)  # (bs, L)
-                    policy_relevance = relevance[np.arange(bs), policy_action]  # (bs, L)
-                    policy_reward = self.compute_reward(policy_relevance)  # (bs, L)
-                    policy.update_params(policy_action, policy_reward, context)
                 else:
                     raise TypeError(f"Unknown policy type: {type(policy)}")
 

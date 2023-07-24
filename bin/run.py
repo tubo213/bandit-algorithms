@@ -16,7 +16,7 @@ def set_up(cfg: Config) -> Tuple[Environment, List[POLICY_TYPE]]:
     action_context = generate_action_context(cfg.n_actions, cfg.dim_action_context, cfg.seed)
     env = Environment(cfg.n_actions, cfg.dim_context, action_context, cfg.task_type, cfg.seed)
     policies: List[POLICY_TYPE] = [
-        RandomPolicy(cfg.n_actions),
+        # RandomPolicy(cfg.n_actions),
         EpsilonGreedyPolicy(cfg.n_actions, 0.03),
         SoftMaxPolicy(cfg.n_actions),
         UCBPolicy(cfg.n_actions, alpha=0.1),

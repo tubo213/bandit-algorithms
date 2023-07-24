@@ -8,7 +8,7 @@ class AbstractMultiplePlayContextFreePolicy(metaclass=ABCMeta):
     def __init__(self, n_actions: int, n_play: int):
         self.n_actions = n_actions
         self.n_play = n_play
-        self.reward = np.zeros(n_actions)
+        self.reward = np.zeros((n_actions, n_play))
         self.cnt = np.zeros((n_actions, n_play))
         self.t = 0
         self.mu = np.zeros(n_actions)
@@ -19,14 +19,13 @@ class AbstractMultiplePlayContextFreePolicy(metaclass=ABCMeta):
 
     def update_params(self, action: np.ndarray, reward: np.ndarray):
         bs = action.shape[0]
-        action = action.reshape(-1)
-        reward = reward.reshape(-1)
-        n = action.shape[0]
+        self.t += bs
+        action = action.flatten()
+        reward = reward.flatten()
         pos = np.tile(np.arange(self.n_play), bs)
-        self.t += n
         self.cnt[action, pos] += 1
-        self.reward[action] += reward
-        self.mu = self.reward / (self.cnt.sum(axis=1) + 1e-10)
+        self.reward[action, pos] += reward
+        self.mu = self.reward.sum(axis=1) / (self.cnt.sum(axis=1) + 1e-10)
 
 
 class AbstractMultiplePlayLinearPolicy(metaclass=ABCMeta):
