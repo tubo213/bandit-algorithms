@@ -1,6 +1,8 @@
 hydra:
   job:
     chdir: true
+  run:
+    dir: outputs/default/${hydra.job.override_dirname}
   sweep:
     dir: outputs/default
     subdir: ${hydra.job.override_dirname}
