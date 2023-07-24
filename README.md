@@ -1,4 +1,4 @@
-# bandit
+# bandit-algorithms
 バンディットアルゴリズムを色々実装してみる
 
 ## 実装済みの方策
@@ -13,12 +13,11 @@
 # Enviroment
 
 ## Requirements
-- python >=3.8.1,<4.0
-- poetry
+- [rye](https://github.com/mitsuhiko/rye)
 
 ## Build
 ```bash
-poetry install
+rye sync
 ```
 
 # Usage
@@ -39,7 +38,7 @@ dim_action_context: 15
 実行
 
 ```bash
-poetry run python bin/run.py --exp-name sample
+rye run python bin/run.py --exp-name sample
 ```
 
 # Results
