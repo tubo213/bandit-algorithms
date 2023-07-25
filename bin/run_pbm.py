@@ -13,11 +13,12 @@ from src.policy.multiple_play.contextfree import (
     PBMUCBPolicy,
 )
 from src.runner import PBMRunner
+from src.enviroment import PBMEnviroment
 from src.type import MUTIPLE_PLAY_POLICY_TYPE
 from src.utils import set_seed
 
 
-def set_up(cfg: PBMConfig) -> Tuple[List[MUTIPLE_PLAY_POLICY_TYPE], np.ndarray]:
+def set_up(cfg: PBMConfig) -> Tuple[List[MUTIPLE_PLAY_POLICY_TYPE], PBMEnviroment]:
     set_seed(cfg.seed)
     policies: List[MUTIPLE_PLAY_POLICY_TYPE] = [
         # MultiplePlayRandomPolicy(cfg.n_actions, cfg.n_play),
@@ -25,15 +26,16 @@ def set_up(cfg: PBMConfig) -> Tuple[List[MUTIPLE_PLAY_POLICY_TYPE], np.ndarray]:
         PBMPIEPolicy(cfg.n_actions, cfg.n_play, cfg.examination, max_t=cfg.step * cfg.bs, eps=0.1),
     ]
     relevance = np.random.rand(cfg.n_actions)
+    env = PBMEnviroment(relevance, cfg.examination)
 
-    return policies, relevance
+    return policies, env
 
 
 @hydra.main(config_path="../conf", config_name="pbm", version_base="1.2")
 def main(ori_cfg: DictConfig):
     cfg: PBMConfig = PBMConfig(**ori_cfg)  # type: ignore
-    policies, relevance = set_up(cfg)
-    runner = PBMRunner(policies, relevance, cfg.examination)
+    policies, env = set_up(cfg)
+    runner = PBMRunner(policies, env)
     # runner.run_simulation(cfg.bs, cfg.step, 0)
     results = runner.run_experiment(cfg.bs, cfg.step, cfg.n_trials)
     save_path = os.getcwd() + "/output.png"

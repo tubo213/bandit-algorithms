@@ -41,6 +41,22 @@ class Environment:
 
         return reward
 
+class PBMEnviroment:
+    def __init__(self, relevance: np.ndarray, examination: np.ndarray):
+        self.relevance = relevance
+        self.examination = examination[None, :]
+        self.n_play = len(examination)
+
+    def get_expected_reward(self, bs) -> np.ndarray:
+        relevance = np.tile(self.relevance, (bs, 1))
+        top_relevance = -np.sort(-relevance, axis=1)[:, : self.n_play]
+        prob = self.examination * top_relevance
+        return np.random.binomial(1, prob)
+
+    def get_reward(self, action: np.ndarray) -> np.ndarray:
+        relevance = self.relevance[action]
+        prob = self.examination * relevance
+        return np.random.binomial(1, prob)
 
 class MLP(nn.Module):
     def __init__(

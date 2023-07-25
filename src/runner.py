@@ -4,14 +4,11 @@ from typing import List
 import numpy as np
 from joblib import Parallel, delayed
 
-from src.enviroment import Environment
+from src.enviroment import Environment, PBMEnviroment
 from src.policy.default.base import AbstractContextFreePolicy, AbstractLinearPolicy
-from src.policy.multiple_play.base import (
-    AbstractMultiplePlayContextFreePolicy,
-)
+from src.policy.multiple_play.base import AbstractMultiplePlayContextFreePolicy
 from src.type import MUTIPLE_PLAY_POLICY_TYPE, POLICY_TYPE
-from src.utils import tqdm_joblib
-from src.utils import set_seed
+from src.utils import set_seed, tqdm_joblib
 
 
 @dataclass(frozen=True)
@@ -63,15 +60,11 @@ class Runner:
 
 
 class PBMRunner:
-    def __init__(
-        self, policies: List[MUTIPLE_PLAY_POLICY_TYPE], relevance: np.ndarray, examination: np.ndarray
-    ):
+    def __init__(self, policies: List[MUTIPLE_PLAY_POLICY_TYPE], env: PBMEnviroment):
         self.policies = policies
         self.n_policy = len(policies)
         self.policy_names = [policy.__class__.__name__ for policy in policies]
-        self.relevance = relevance # (1, K)
-        self.examination = examination[None, :]  # (1, L)
-        self.n_play = len(examination)
+        self.env = env
 
     def run_experiment(self, bs: int, step: int, n_trials: int) -> List[ExpResult]:
         # run experiments in parallel
@@ -85,15 +78,12 @@ class PBMRunner:
         set_seed(trial)
         regret = np.zeros((step * bs, self.n_policy))  # (step * bs, n_policy)
 
-        for i in range(step):# (bs, K)
-            relevance = np.tile(self.relevance, (bs, 1))  # (bs, K)
-            top_relevance = -np.sort(-relevance, axis=1)[:, : self.n_play]  # (bs, L)
-            expected_reward = self.compute_reward(top_relevance)  # (bs, L)
+        for i in range(step):  # (bs, K)
+            expected_reward = self.env.get_expected_reward(bs)  # (bs, K)
             for j, policy in enumerate(self.policies):
                 if isinstance(policy, AbstractMultiplePlayContextFreePolicy):
                     policy_action = policy.select_action(bs)  # (bs, L)
-                    policy_relevance = relevance[np.arange(bs), policy_action]  # (bs, L)
-                    policy_reward = self.compute_reward(policy_relevance)  # (bs, L)
+                    policy_reward = self.env.get_reward(policy_action)  # (bs, L)
                     policy.update_params(policy_action, policy_reward)  # (bs, L)
                 else:
                     raise TypeError(f"Unknown policy type: {type(policy)}")
@@ -103,7 +93,3 @@ class PBMRunner:
             cum_regret = np.cumsum(regret, axis=0)
 
         return ExpResult(self.policy_names, cum_regret)
-
-    def compute_reward(self, relevance: np.ndarray) -> np.ndarray:
-        prob = relevance * self.examination
-        return np.random.binomial(1, prob)
