@@ -62,9 +62,12 @@ k: 腕の数
 
 #### Position Based Model(Contextfree)
 k: 腕の数
+L: プレイ回数 = 10
 
-- k=10
-![](./resources/pbm/n_actions=10.png)
+腕の数が多くなるほどPBMベースの方策が良い結果を出すが、Epsilon-Greedyが強くなる
+
+- k=15
+![](./resources/pbm/n_actions=15.png)
 
 - k=30
 ![](./resources/pbm/n_actions=30.png)
@@ -75,6 +78,14 @@ k: 腕の数
 - k=120
 ![](./resources/pbm/n_actions=120.png)
 
+- k=240
+![](./resources/pbm/n_actions=240.png)
+
+- k=480
+![](./resources/pbm/n_actions=480.png)
+
+- k=960
+![](./resources/pbm/n_actions=960.png)
 
 # References
 - https://github.com/st-tech/zr-obp

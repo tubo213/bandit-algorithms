@@ -9,6 +9,9 @@ from src.config import PBMConfig
 from src.evaluator import Evaluator
 from src.policy.multiple_play.contextfree import (
     MultiplePlayRandomPolicy,
+    MultiplePlayEpsilonGreedyPolicy,
+    MultiplePlayUCBPolicy,
+    MultiplePlayTS,
     PBMPIEPolicy,
     PBMUCBPolicy,
 )
@@ -22,6 +25,9 @@ def set_up(cfg: PBMConfig) -> Tuple[List[MUTIPLE_PLAY_POLICY_TYPE], PBMEnviromen
     set_seed(cfg.seed)
     policies: List[MUTIPLE_PLAY_POLICY_TYPE] = [
         # MultiplePlayRandomPolicy(cfg.n_actions, cfg.n_play),
+        MultiplePlayEpsilonGreedyPolicy(cfg.n_actions, cfg.n_play, epsilon=0.05),
+        MultiplePlayUCBPolicy(cfg.n_actions, cfg.n_play),
+        MultiplePlayTS(cfg.n_actions, cfg.n_play),
         PBMUCBPolicy(cfg.n_actions, cfg.n_play, cfg.examination, delta=0.01),
         PBMPIEPolicy(cfg.n_actions, cfg.n_play, cfg.examination, max_t=cfg.step * cfg.bs, eps=0.1),
     ]
