@@ -25,8 +25,6 @@ class PBMConfig:
     bs: int
     step: int
     n_actions: int
-    dim_context: int
-    dim_action_context: int
     examination: np.ndarray = field(default_factory=lambda: np.empty(0))
     n_play: int = -1
     play_rate: float = -1
