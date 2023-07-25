@@ -6,17 +6,17 @@ import numpy as np
 from omegaconf import DictConfig
 
 from src.config import PBMConfig
+from src.enviroment import PBMEnviroment
 from src.evaluator import Evaluator
 from src.policy.multiple_play.contextfree import (
-    MultiplePlayRandomPolicy,
     MultiplePlayEpsilonGreedyPolicy,
-    MultiplePlayUCBPolicy,
+    MultiplePlayRandomPolicy,
     MultiplePlayTS,
+    MultiplePlayUCBPolicy,
     PBMPIEPolicy,
     PBMUCBPolicy,
 )
 from src.runner import PBMRunner
-from src.enviroment import PBMEnviroment
 from src.type import MUTIPLE_PLAY_POLICY_TYPE
 from src.utils import set_seed
 
@@ -45,7 +45,7 @@ def main(ori_cfg: DictConfig):
     # runner.run_simulation(cfg.bs, cfg.step, 0)
     results = runner.run_experiment(cfg.bs, cfg.step, cfg.n_trials)
     save_path = os.getcwd() + "/output.png"
-    Evaluator.plot_results(results, save_path)
+    Evaluator.plot_results(results, cfg.n_actions, cfg.n_play, save_path)
 
 
 if __name__ == "__main__":

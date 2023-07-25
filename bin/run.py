@@ -6,7 +6,12 @@ import hydra
 from src.config import Config
 from src.enviroment import Environment, generate_action_context
 from src.evaluator import Evaluator
-from src.policy.default.contextfree import EpsilonGreedyPolicy, RandomPolicy, SoftMaxPolicy, UCBPolicy
+from src.policy.default.contextfree import (
+    EpsilonGreedyPolicy,
+    RandomPolicy,
+    SoftMaxPolicy,
+    UCBPolicy,
+)
 from src.policy.default.linear import LinUCBPolicy
 from src.runner import Runner
 from src.type import POLICY_TYPE
@@ -32,7 +37,7 @@ def main(cfg: Config):
     runner = Runner(env, policies)
     results = runner.run_experiment(cfg.bs, cfg.step, cfg.n_trials)
     save_path = os.getcwd() + "/output.png"
-    Evaluator.plot_results(results, save_path)
+    Evaluator.plot_results(results, cfg.n_actions, save_path)
 
 
 if __name__ == "__main__":

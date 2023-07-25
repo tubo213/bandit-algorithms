@@ -8,7 +8,7 @@ from src.runner import ExpResult
 
 class Evaluator:
     @classmethod
-    def plot_results(cls, results: List[ExpResult], save_path: str):
+    def plot_results(cls, results: List[ExpResult], n_action: int, n_play: Optional[int], save_path: str):
         # collect results
         policy_names = results[0].policy_names
         cum_regrets = np.array([result.cum_regret for result in results])
@@ -18,7 +18,10 @@ class Evaluator:
         fig, ax = plt.subplots(1, 1, figsize=(7, 5))
         ax.plot(cum_regret, label=policy_names)
         cls.draw_std(cum_regret, cum_regret_std, policy_names, ax)
-        ax.set_title("Regret", fontsize=20)
+        if n_play is not None:
+            ax.set_title(f"Regret K={n_action} L={n_play}", fontsize=20)
+        else:
+            ax.set_title(f"Regret K={n_action}", fontsize=20)
         ax.set_xlabel("Step", fontsize=15)
         ax.legend()
 
