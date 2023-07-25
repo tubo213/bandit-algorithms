@@ -17,6 +17,9 @@
 
 #### Contextfree
 - random
+- Multiple-Play Epsilon-Greedy
+- Multiple-Play UCB
+- Multiple-Play Thompson Sampling
 - PBM-UCB
 - PBM-PIE
 
