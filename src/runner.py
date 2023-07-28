@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from dataclasses import dataclass
 from typing import List
 
@@ -17,11 +18,16 @@ class ExpResult:
     cum_regret: np.ndarray
 
 
-class Runner:
-    def __init__(self, env: Environment, policies: List[POLICY_TYPE]):
+class BaseRunner:
+    def __init__(
+        self,
+        env,
+        policies,
+    ):
         self.env = env
         self.policies = policies
         self.policy_names = [policy.__class__.__name__ for policy in policies]
+        self.n_policy = len(policies)
 
     def run_experiment(self, bs: int, step: int, n_trials: int) -> List[ExpResult]:
         # run experiments in parallel
@@ -30,6 +36,15 @@ class Runner:
                 delayed(self.run_simulation)(bs, step, trial) for trial in range(n_trials)
             )
         return results
+
+    @abstractmethod
+    def run_simulation(self, bs: int, step: int, trial: int) -> ExpResult:
+        raise NotImplementedError
+
+
+class DefaultRunner(BaseRunner):
+    def __init__(self, env: Environment, policies: List[POLICY_TYPE]):
+        super().__init__(env, policies)
 
     def run_simulation(self, bs: int, step: int, trial: int) -> ExpResult:
         set_seed(trial)
@@ -59,20 +74,9 @@ class Runner:
         return ExpResult(self.policy_names, cum_regret)
 
 
-class PBMRunner:
-    def __init__(self, policies: List[MUTIPLE_PLAY_POLICY_TYPE], env: PBMEnviroment):
-        self.policies = policies
-        self.n_policy = len(policies)
-        self.policy_names = [policy.__class__.__name__ for policy in policies]
-        self.env = env
-
-    def run_experiment(self, bs: int, step: int, n_trials: int) -> List[ExpResult]:
-        # run experiments in parallel
-        with tqdm_joblib(n_trials, desc="Running experiments..."):
-            results: List[ExpResult] = Parallel(n_jobs=-1)(
-                delayed(self.run_simulation)(bs, step, trial) for trial in range(n_trials)
-            )
-        return results
+class PBMRunner(BaseRunner):
+    def __init__(self, env: PBMEnviroment, policies: List[MUTIPLE_PLAY_POLICY_TYPE]):
+        super().__init__(env, policies)
 
     def run_simulation(self, bs: int, step: int, trial: int) -> ExpResult:
         set_seed(trial)

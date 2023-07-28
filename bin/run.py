@@ -13,7 +13,7 @@ from src.policy.default.contextfree import (
     UCBPolicy,
 )
 from src.policy.default.linear import LinUCBPolicy
-from src.runner import Runner
+from src.runner import DefaultRunner
 from src.type import POLICY_TYPE
 
 
@@ -34,10 +34,10 @@ def set_up(cfg: Config) -> Tuple[Environment, List[POLICY_TYPE]]:
 @hydra.main(config_path="../conf", config_name="default", version_base="1.2")
 def main(cfg: Config):
     env, policies = set_up(cfg)
-    runner = Runner(env, policies)
+    runner = DefaultRunner(env, policies)
     results = runner.run_experiment(cfg.bs, cfg.step, cfg.n_trials)
     save_path = os.getcwd() + "/output.png"
-    Evaluator.plot_results(results, cfg.n_actions, save_path)
+    Evaluator.plot_results(results, cfg.n_actions, n_play=None, save_path=save_path)
 
 
 if __name__ == "__main__":
